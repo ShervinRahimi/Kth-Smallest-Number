@@ -1,0 +1,220 @@
+import java.util.Random;
+import java.util.Scanner;
+public class KthSmallest
+{
+   private static Random rand = new Random();
+   private static Scanner keyboard = new Scanner(System.in);
+
+   //Algorithm #1
+   public static int alg1(int k, int[] S)
+   {
+       if (S.length == 1)
+           return S[0];
+
+       int m = S[rand.nextInt(S.length)];
+       int[] S1 = new int[S.length];
+       int[] S2 = new int[S.length];
+       int[] S3 = new int[S.length];
+       int p = 0;
+       int q = 0;
+       int r = 0;
+
+       for (int i = 0; i < S.length; i++)
+       {
+           if (S[i] < m)
+           {
+               S1[p] = S[i];
+               p++;
+           }
+           else if (S[i] == m)
+           {
+               S2[q] = S[i];
+               q++;
+           }
+           else
+           {
+               S3[r] = S[i];
+               r++;
+           }
+       }
+
+       S1 = trimToSize(S1, p);
+       S2 = trimToSize(S2, q);
+       S3 = trimToSize(S3, r);
+
+       if (S1.length >= k)
+           return alg1(k, S1);
+       else if (S1.length + S2.length >= k)
+           return m;
+       else
+           return alg1(k - S1.length - S2.length, S3);
+   }
+
+   //Algorithm #2
+   public static int alg2(int k, int[] S)
+   {      
+       if (S.length < 50)
+       {
+           sort(S, 0, S.length - 1);
+           return S[k - 1];
+       }
+
+       for (int i = 0; i < S.length; i += 5)
+       {
+           if (i + 4 < S.length)
+               sort(S, i, i + 4);
+           else
+               sort(S, i, S.length - 1);
+       }
+      
+       int[] M = new int[(int)Math.ceil(S.length / 5.0)];
+      
+       for (int i = 0, j = 0; i < S.length; i += 5, j++)
+       {
+           if (i + 4 < S.length)
+               M[j] = S[(2 * i + 4) / 2];
+           else
+               M[j] = S[(i + S.length - 1) / 2];              
+       }      
+
+       int m = alg2(M.length / 2 + 1, M);
+       int[] S1 = new int[S.length];
+       int[] S2 = new int[S.length];
+       int[] S3 = new int[S.length];
+       int p = 0;
+       int q = 0;
+       int r = 0;
+
+       for (int i = 0; i < S.length; i++)
+       {
+           if (S[i] < m)
+           {
+               S1[p] = S[i];
+               p++;
+           }
+           else if (S[i] == m)
+           {
+               S2[q] = S[i];
+               q++;
+           }
+           else
+           {
+               S3[r] = S[i];
+               r++;
+           }
+       }
+
+       S1 = trimToSize(S1, p);
+       S2 = trimToSize(S2, q);
+       S3 = trimToSize(S3, r);
+
+       if (S1.length >= k)
+           return alg2(k, S1);
+       else if (S1.length + S2.length >= k)
+           return m;
+       else
+           return alg2(k - S1.length - S2.length, S3);
+   }
+  
+   // trimToSize helper method
+   private static int[] trimToSize(int[] arr, int size)
+   {
+       int[] temp = new int[size];
+       for (int i = 0; i < size; i++)
+       {
+           temp[i] = arr[i];
+       }
+       return temp;
+   }
+
+   // sort helper method
+   private static void sort(int arr[], int begin, int end)
+   {
+       if (begin < end)
+       {
+           int pivot = arr[end];
+           int i = (begin - 1);
+
+           for (int j = begin; j < end; j++)
+           {
+               if (arr[j] <= pivot)
+               {
+                   i++;
+
+                   int swapTemp = arr[i];
+                   arr[i] = arr[j];
+                   arr[j] = swapTemp;
+               }
+           }
+
+           int swapTemp = arr[i + 1];
+           arr[i + 1] = arr[end];
+           arr[end] = swapTemp;
+
+           int partitionIndex = i + 1;
+
+           sort(arr, begin, partitionIndex - 1);
+           sort(arr, partitionIndex + 1, end);
+       }
+   }
+  
+   //Print the array of integers
+   public static void printArray(int[] S)
+   {
+       for(int i = 0; i < S.length; i++)
+       {
+           System.out.print(S[i] + "\t");
+           if(i % 10 == 9)
+               System.out.println();
+       }
+   }
+
+   public static void main(String[] args)
+   {
+	 
+       System.out.print("Please enter the size of an array: ");
+       int size = keyboard.nextInt();
+       while(size < 1)
+       {
+           System.out.println("Size of the array should be greater than 0. Try again.");
+           System.out.print("Enter the size of an array: ");
+           size = keyboard.nextInt();
+       }
+      
+       System.out.print("Please enter the value of k: ");
+       int k = keyboard.nextInt();      
+       while(k < 1 || k > size)
+       {
+           System.out.println("Value of k should be in the range 1-" + size + ".");
+           System.out.print("Enter the value of k: ");
+           k = keyboard.nextInt();
+       }
+      
+       //random integers from 10-90
+       int[] S = new int[size];  
+       for(int i = 0; i < size; i++)
+       {
+           S[i] = 10 + rand.nextInt(90);
+       }
+      
+       System.out.println("\nArray printed the following random values:");
+       printArray(S);
+       System.out.println();
+       
+       long start_time1 = System.nanoTime();
+      
+       System.out.println(k + "th smallest value in the array using Algorithm #1: " + alg1(k, S));
+       
+       long end_time1 = System.nanoTime();
+       
+       System.out.println("Time Taken: " + (end_time1 - start_time1) + " nanoseconds");
+       
+       long start_time2 = System.nanoTime();
+       
+       System.out.println(k + "th smallest value in the array using Algorithm #2: " + alg2(k, S));
+       
+       long end_time2 = System.nanoTime();
+       System.out.println("Time Taken: " + (end_time2 - start_time2) + " nanoseconds");
+
+   } 
+}
